@@ -68,9 +68,20 @@ CREATE POLICY "Enable delete access for all users" ON active_list
 -- 5. הפעל Realtime Replication
 -- ============================================
 
--- הסר את הטבלאות מ-publication הישנה (אם קיימת)
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS items;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS active_list;
+-- הסר את הטבלאות מ-publication הישנה (מתעלם משגיאות אם לא קיימות)
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime DROP TABLE items;
+EXCEPTION
+  WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime DROP TABLE active_list;
+EXCEPTION
+  WHEN undefined_object THEN NULL;
+END $$;
 
 -- הוסף את הטבלאות ל-publication
 ALTER PUBLICATION supabase_realtime ADD TABLE items;

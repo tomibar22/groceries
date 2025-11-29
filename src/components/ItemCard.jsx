@@ -1,39 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import './ItemCard.css';
 
-function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onRemove }) {
-  const [touchStartX, setTouchStartX] = useState(0);
-  const [touchEndX, setTouchEndX] = useState(0);
-  const [swiping, setSwiping] = useState(false);
+function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onToggleNeeded }) {
   const cardRef = useRef(null);
 
-  const handleTouchStart = (e) => {
-    setTouchStartX(e.touches[0].clientX);
-    setSwiping(true);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEndX(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!swiping) return;
-
-    const swipeDistance = touchStartX - touchEndX;
-    const minSwipeDistance = 100;
-
-    // swipe שמאלה (למחיקה)
-    if (swipeDistance > minSwipeDistance) {
-      onRemove(item.id);
-    }
-
-    setSwiping(false);
-    setTouchStartX(0);
-    setTouchEndX(0);
-  };
-
-  const handleCheckboxChange = () => {
+  const handlePurchasedChange = () => {
     onTogglePurchased(item.id, item.purchased);
+
+    // Haptic feedback (אם נתמך)
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  const handleNeededChange = () => {
+    onToggleNeeded(item.id, item.needed);
 
     // Haptic feedback (אם נתמך)
     if (navigator.vibrate) {
@@ -52,17 +33,15 @@ function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onRemove }) {
   return (
     <div
       ref={cardRef}
-      className={`item-card ${item.purchased ? 'purchased' : ''} ${swiping ? 'swiping' : ''}`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className={`item-card ${item.purchased ? 'purchased' : ''} ${!item.needed ? 'not-needed' : ''}`}
     >
       <div className="item-main">
-        <label className="checkbox-container">
+        {/* Checkbox: נקנה */}
+        <label className="checkbox-container checkbox-purchased">
           <input
             type="checkbox"
             checked={item.purchased}
-            onChange={handleCheckboxChange}
+            onChange={handlePurchasedChange}
             className="checkbox"
           />
           <span className="checkmark">{item.purchased ? '✓' : ''}</span>
@@ -72,38 +51,37 @@ function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onRemove }) {
           <span className="item-name">{item.name}</span>
         </div>
 
-        <div className="quantity-controls">
-          <button
-            className="quantity-btn"
-            onClick={decrementQuantity}
-            aria-label="הפחת כמות"
-          >
-            −
-          </button>
-          <span className="quantity">{item.quantity}</span>
-          <button
-            className="quantity-btn"
-            onClick={incrementQuantity}
-            aria-label="הוסף כמות"
-          >
-            +
-          </button>
-        </div>
+        {item.needed && (
+          <div className="quantity-controls">
+            <button
+              className="quantity-btn"
+              onClick={decrementQuantity}
+              aria-label="הפחת כמות"
+            >
+              −
+            </button>
+            <span className="quantity">{item.quantity || 1}</span>
+            <button
+              className="quantity-btn"
+              onClick={incrementQuantity}
+              aria-label="הוסף כמות"
+            >
+              +
+            </button>
+          </div>
+        )}
 
-        <button
-          className="delete-btn"
-          onClick={() => onRemove(item.id)}
-          aria-label="מחק מוצר"
-        >
-          ✕
-        </button>
+        {/* Checkbox: צריך לקנות */}
+        <label className="checkbox-container checkbox-needed">
+          <input
+            type="checkbox"
+            checked={item.needed}
+            onChange={handleNeededChange}
+            className="checkbox"
+          />
+          <span className="checkmark checkmark-needed">{item.needed ? '🛒' : '➕'}</span>
+        </label>
       </div>
-
-      {swiping && (
-        <div className="swipe-indicator">
-          <span>← החלק למחיקה</span>
-        </div>
-      )}
     </div>
   );
 }

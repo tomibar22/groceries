@@ -5,64 +5,31 @@ import ActiveList from './components/ActiveList';
 import './App.css';
 
 function App() {
-  const [allItems, setAllItems] = useState([]);
-  const [activeList, setActiveList] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const touchStartY = useRef(0);
 
   // טעינה ראשונית של כל המוצרים
   useEffect(() => {
-    fetchAllItems();
-    fetchActiveList();
+    fetchItems();
   }, []);
 
-  // הקשבה לשינויים real-time ברשימה הפעילה
-  useEffect(() => {
-    const channel = supabase
-      .channel('active_list_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'active_list'
-        },
-        (payload) => {
-          console.log('✅ Real-time change detected:', payload.eventType, payload);
-          fetchActiveList();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Active list subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to active_list changes');
-        }
-        if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Error subscribing to active_list');
-        }
-      });
-
-    return () => {
-      console.log('🔌 Unsubscribing from active_list channel');
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // הקשבה לשינויים real-time במאגר המוצרים
+  // הקשבה לשינויים real-time
   useEffect(() => {
     const channel = supabase
       .channel('items_changes')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'items'
         },
         (payload) => {
-          console.log('✅ New item added to catalog:', payload);
-          fetchAllItems();
+          console.log('✅ Real-time change detected:', payload.eventType, payload);
+          fetchItems();
         }
       )
       .subscribe((status) => {
@@ -70,106 +37,69 @@ function App() {
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to items changes');
         }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Error subscribing to items');
+        }
       });
 
     return () => {
+      console.log('🔌 Unsubscribing from items channel');
       supabase.removeChannel(channel);
     };
   }, []);
 
-  const fetchAllItems = async () => {
+  const fetchItems = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('items')
         .select('*')
-        .order('name');
+        .order('needed', { ascending: false })
+        .order('purchased', { ascending: true })
+        .order('name', { ascending: true });
 
       if (error) throw error;
-      setAllItems(data || []);
+      setItems(data || []);
     } catch (error) {
       console.error('Error fetching items:', error);
-    }
-  };
-
-  const fetchActiveList = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('active_list')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setActiveList(data || []);
-    } catch (error) {
-      console.error('Error fetching active list:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const addItemToActiveList = async (itemName, itemId = null) => {
+  const addOrToggleItem = async (itemName) => {
     try {
-      // בדיקה אם המוצר כבר קיים ברשימה הפעילה
-      const existing = activeList.find(
-        item => item.name.toLowerCase() === itemName.toLowerCase() && !item.purchased
+      // בדוק אם המוצר קיים
+      const existing = items.find(
+        item => item.name.toLowerCase() === itemName.toLowerCase()
       );
 
       if (existing) {
-        // אם קיים, נעדכן את הכמות
-        await updateQuantity(existing.id, existing.quantity + 1);
-        return;
-      }
-
-      // אם המוצר לא קיים במאגר, נוסיף אותו
-      let finalItemId = itemId;
-      if (!itemId) {
-        const { data: newItem, error: itemError } = await supabase
+        // אם קיים, סמן אותו כ-needed
+        await supabase
           .from('items')
-          .insert([{ name: itemName }])
-          .select()
-          .single();
-
-        if (itemError) {
-          // אם יש שגיאת UNIQUE (המוצר כבר קיים), נמצא אותו
-          if (itemError.code === '23505') {
-            const { data: existingItem } = await supabase
-              .from('items')
-              .select('id')
-              .eq('name', itemName)
-              .single();
-
-            finalItemId = existingItem?.id;
-          } else {
-            throw itemError;
-          }
-        } else {
-          finalItemId = newItem.id;
-        }
-      }
-
-      // הוספה לרשימה הפעילה
-      const { error } = await supabase
-        .from('active_list')
-        .insert([
-          {
-            item_id: finalItemId,
+          .update({ needed: true, purchased: false })
+          .eq('id', existing.id);
+      } else {
+        // אם לא קיים, צור חדש
+        await supabase
+          .from('items')
+          .insert([{
             name: itemName,
-            quantity: 1,
-            purchased: false
-          }
-        ]);
-
-      if (error) throw error;
+            needed: true,
+            purchased: false,
+            quantity: 1
+          }]);
+      }
     } catch (error) {
-      console.error('Error adding item:', error);
+      console.error('Error adding/toggling item:', error);
     }
   };
 
   const togglePurchased = async (id, currentStatus) => {
     try {
       const { error } = await supabase
-        .from('active_list')
+        .from('items')
         .update({ purchased: !currentStatus })
         .eq('id', id);
 
@@ -181,13 +111,10 @@ function App() {
 
   const updateQuantity = async (id, newQuantity) => {
     try {
-      if (newQuantity < 1) {
-        await removeFromActiveList(id);
-        return;
-      }
+      if (newQuantity < 1) newQuantity = 1;
 
       const { error } = await supabase
-        .from('active_list')
+        .from('items')
         .update({ quantity: newQuantity })
         .eq('id', id);
 
@@ -197,24 +124,24 @@ function App() {
     }
   };
 
-  const removeFromActiveList = async (id) => {
+  const toggleNeeded = async (id, currentStatus) => {
     try {
       const { error } = await supabase
-        .from('active_list')
-        .delete()
+        .from('items')
+        .update({ needed: !currentStatus, purchased: false })
         .eq('id', id);
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error removing item:', error);
+      console.error('Error toggling needed:', error);
     }
   };
 
   const clearPurchased = async () => {
     try {
       const { error } = await supabase
-        .from('active_list')
-        .delete()
+        .from('items')
+        .update({ purchased: false, needed: false })
         .eq('purchased', true);
 
       if (error) throw error;
@@ -234,12 +161,19 @@ function App() {
 
     if (pullDistance > 100 && window.scrollY === 0 && !refreshing) {
       setRefreshing(true);
-      fetchAllItems();
-      fetchActiveList();
+      fetchItems();
     }
   };
 
-  const purchasedCount = activeList.filter(item => item.purchased).length;
+  // סינון לפי חיפוש
+  const filteredItems = searchText.trim()
+    ? items.filter(item =>
+        item.name.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : items;
+
+  const purchasedCount = items.filter(item => item.purchased).length;
+  const neededCount = items.filter(item => item.needed && !item.purchased).length;
 
   return (
     <div
@@ -254,19 +188,27 @@ function App() {
       </header>
 
       <SearchBar
-        allItems={allItems}
-        onAddItem={addItemToActiveList}
+        allItems={items}
+        searchText={searchText}
+        onSearchChange={setSearchText}
+        onAddItem={addOrToggleItem}
       />
 
       {loading ? (
         <div className="loading">טוען...</div>
       ) : (
         <>
+          {neededCount > 0 && (
+            <div className="stats-bar">
+              צריך לקנות: <strong>{neededCount}</strong> מוצרים
+            </div>
+          )}
+
           <ActiveList
-            items={activeList}
+            items={filteredItems}
             onTogglePurchased={togglePurchased}
             onUpdateQuantity={updateQuantity}
-            onRemove={removeFromActiveList}
+            onToggleNeeded={toggleNeeded}
           />
 
           {purchasedCount > 0 && (
@@ -275,14 +217,14 @@ function App() {
                 className="clear-purchased-btn"
                 onClick={clearPurchased}
               >
-                🗑️ נקה מוצרים שנקנו ({purchasedCount})
+                ✓ סמן הכל כלא נקנה ({purchasedCount})
               </button>
             </div>
           )}
 
-          {activeList.length === 0 && (
+          {items.length === 0 && (
             <div className="empty-state">
-              <p>הרשימה ריקה</p>
+              <p>אין מוצרים בקטלוג</p>
               <p className="empty-hint">התחל להוסיף מוצרים 👆</p>
             </div>
           )}

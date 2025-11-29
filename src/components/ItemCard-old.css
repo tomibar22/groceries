@@ -1,5 +1,5 @@
 /* ============================================
-   Item Card - Master Catalog Model
+   Item Card
    ============================================ */
 
 .item-card {
@@ -10,7 +10,6 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  margin-bottom: var(--spacing-sm);
 }
 
 .item-card:active {
@@ -22,9 +21,9 @@
   background: var(--bg-color);
 }
 
-.item-card.not-needed {
-  opacity: 0.4;
-  background: #f9f9f9;
+.item-card.swiping {
+  transform: translateX(-20px);
+  transition: transform 0.1s ease-out;
 }
 
 /* ============================================
@@ -62,7 +61,7 @@
   height: 32px;
   min-width: 32px;
   min-height: 32px;
-  border: 3px solid var(--success-color);
+  border: 3px solid var(--primary-color);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -82,29 +81,6 @@
   transform: scale(0.9);
 }
 
-/* Checkbox variants */
-.checkbox-purchased {
-  /* Checkbox שמאלי - נקנה */
-  order: 1;
-}
-
-.checkbox-needed {
-  /* Checkbox ימני - צריך לקנות */
-  order: 4;
-}
-
-.checkmark-needed {
-  background: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: white;
-  font-size: 18px;
-}
-
-.checkbox:not(:checked) + .checkmark-needed {
-  background: white !important;
-  border-color: var(--primary-color) !important;
-}
-
 /* ============================================
    Item Info
    ============================================ */
@@ -112,7 +88,6 @@
 .item-info {
   flex: 1;
   min-width: 0;
-  order: 2;
 }
 
 .item-name {
@@ -129,10 +104,6 @@
   color: var(--text-secondary);
 }
 
-.item-card.not-needed .item-name {
-  color: var(--text-secondary);
-}
-
 /* ============================================
    Quantity Controls
    ============================================ */
@@ -142,7 +113,6 @@
   align-items: center;
   gap: var(--spacing-xs);
   flex-shrink: 0;
-  order: 3;
 }
 
 .quantity-btn {
@@ -172,6 +142,53 @@
   color: var(--text-primary);
   min-width: 24px;
   text-align: center;
+}
+
+/* ============================================
+   Delete Button
+   ============================================ */
+
+.delete-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  background: var(--danger-color);
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.delete-btn:active {
+  transform: scale(0.9);
+  background: #e53e3e;
+}
+
+/* ============================================
+   Swipe Indicator
+   ============================================ */
+
+.swipe-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: var(--danger-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ============================================
@@ -207,7 +224,8 @@
     font-size: 15px;
   }
 
-  .quantity-btn {
+  .quantity-btn,
+  .delete-btn {
     width: 32px;
     height: 32px;
     min-width: 32px;

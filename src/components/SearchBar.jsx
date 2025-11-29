@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Fuse from 'fuse.js';
 import './SearchBar.css';
 
-function SearchBar({ allItems, onAddItem }) {
-  const [searchText, setSearchText] = useState('');
+function SearchBar({ allItems, searchText, onSearchChange, onAddItem }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
@@ -38,29 +37,20 @@ function SearchBar({ allItems, onAddItem }) {
 
     if (!trimmedText) return;
 
-    // בדיקה אם המוצר קיים במאגר (case-insensitive)
-    const existingItem = allItems.find(
-      item => item.name.toLowerCase() === trimmedText.toLowerCase()
-    );
+    // הוסף או סמן כ-needed
+    onAddItem(trimmedText);
 
-    if (existingItem) {
-      // אם קיים, נוסיף רק לרשימה הפעילה
-      onAddItem(existingItem.name, existingItem.id);
-    } else {
-      // אם לא קיים, נוסיף גם למאגר וגם לרשימה הפעילה
-      onAddItem(trimmedText);
-    }
-
-    // ניקוי השדה וחזרה לפוקוס
-    setSearchText('');
+    // ניקוי השדה
+    onSearchChange('');
     setSuggestions([]);
     setShowSuggestions(false);
     inputRef.current?.focus();
   };
 
   const handleSuggestionClick = (item) => {
-    onAddItem(item.name, item.id);
-    setSearchText('');
+    // סמן את המוצר כ-needed
+    onAddItem(item.name);
+    onSearchChange('');
     setSuggestions([]);
     setShowSuggestions(false);
     inputRef.current?.focus();
@@ -73,9 +63,9 @@ function SearchBar({ allItems, onAddItem }) {
           ref={inputRef}
           type="text"
           className="search-input"
-          placeholder="הוסף מוצר... 🔍"
+          placeholder="חפש או הוסף מוצר... 🔍"
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           autoComplete="off"
           autoFocus
         />

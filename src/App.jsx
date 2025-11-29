@@ -29,13 +29,22 @@ function App() {
           table: 'active_list'
         },
         (payload) => {
-          console.log('Real-time change:', payload);
+          console.log('✅ Real-time change detected:', payload.eventType, payload);
           fetchActiveList();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Active list subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to active_list changes');
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Error subscribing to active_list');
+        }
+      });
 
     return () => {
+      console.log('🔌 Unsubscribing from active_list channel');
       supabase.removeChannel(channel);
     };
   }, []);
@@ -52,11 +61,16 @@ function App() {
           table: 'items'
         },
         (payload) => {
-          console.log('New item added:', payload);
+          console.log('✅ New item added to catalog:', payload);
           fetchAllItems();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Items subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to items changes');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

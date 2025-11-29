@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>יצירת אייקונים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        canvas {
+            border: 2px solid white;
+            margin: 20px;
+            display: none;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #f0f0f0;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛒 יצירת אייקונים לאפליקציה</h1>
+
+    <div class="instructions">
+        <h2>הוראות:</h2>
+        <ol style="text-align: right;">
+            <li>לחץ על הכפתורים למטה ליצירת אייקונים</li>
+            <li>כל כפתור יוריד אייקון בגודל מתאים</li>
+            <li>שמור את כל האייקונים בתיקיית <code>public/</code></li>
+            <li>עלה מחדש ל-Netlify</li>
+        </ol>
+    </div>
+
+    <button onclick="downloadIcon(192, 'icon-192x192.png')">הורד 192x192</button>
+    <button onclick="downloadIcon(512, 'icon-512x512.png')">הורד 512x512</button>
+    <button onclick="downloadIcon(180, 'apple-touch-icon.png')">הורד Apple Icon</button>
+    <button onclick="downloadIcon(32, 'favicon.png')">הורד Favicon</button>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        function downloadIcon(size, filename) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // רקע גרדיאנט
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // עגלת קניות (emoji)
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🛒', size / 2, size / 2);
+
+            // הורדה
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>

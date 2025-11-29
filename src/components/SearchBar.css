@@ -1,0 +1,130 @@
+/* ============================================
+   Search Bar Container
+   ============================================ */
+
+.search-bar-container {
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  padding: var(--spacing-md);
+  background: transparent;
+}
+
+/* ============================================
+   Search Form
+   ============================================ */
+
+.search-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs);
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s ease;
+}
+
+.search-form:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.search-input {
+  flex: 1;
+  min-height: var(--touch-target-large);
+  padding: 0 var(--spacing-md);
+  font-size: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.add-button {
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  background: var(--primary-gradient);
+  color: white;
+  font-size: 24px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.add-button:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+/* ============================================
+   Suggestions Dropdown
+   ============================================ */
+
+.suggestions-container {
+  margin-top: var(--spacing-sm);
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+.suggestion-item {
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: right;
+  font-size: 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+  transition: background 0.15s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:active {
+  background: var(--bg-color);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* Mobile - Portrait */
+@media (max-width: 480px) {
+  .search-input {
+    font-size: 16px;
+  }
+
+  .add-button {
+    font-size: 22px;
+  }
+}
+
+/* Tablet & Desktop */
+@media (min-width: 481px) {
+  .search-bar-container {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+}
+
+/* Safe area */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .search-bar-container {
+    top: calc(60px + env(safe-area-inset-top));
+  }
+}

@@ -1,0 +1,53 @@
+/* ============================================
+   Active List Container
+   ============================================ */
+
+.active-list {
+  padding: var(--spacing-md);
+  padding-top: 0;
+}
+
+/* ============================================
+   Items Section
+   ============================================ */
+
+.items-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ============================================
+   Purchased Section
+   ============================================ */
+
+.purchased-section {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.section-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.9;
+  text-align: center;
+}
+
+.purchased-section .items-section {
+  gap: var(--spacing-xs);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* Tablet & Desktop */
+@media (min-width: 481px) {
+  .active-list {
+    padding: var(--spacing-md) var(--spacing-lg);
+    padding-top: 0;
+  }
+}

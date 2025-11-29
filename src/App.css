@@ -1,0 +1,183 @@
+/* ============================================
+   App Container
+   ============================================ */
+
+.app {
+  min-height: 100vh;
+  background: var(--primary-gradient);
+  padding-bottom: 80px;
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.app-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: var(--spacing-md) var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ============================================
+   Pull to Refresh
+   ============================================ */
+
+.refresh-indicator {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  font-weight: 600;
+  color: var(--primary-color);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================
+   Loading & Empty States
+   ============================================ */
+
+.loading {
+  text-align: center;
+  padding: var(--spacing-xl);
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+}
+
+.empty-state p {
+  font-size: 20px;
+  color: white;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.empty-hint {
+  font-size: 16px;
+  opacity: 0.8;
+  font-weight: 400 !important;
+}
+
+/* ============================================
+   Footer Actions
+   ============================================ */
+
+.footer-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+.clear-purchased-btn {
+  width: 100%;
+  min-height: var(--touch-target);
+  background: var(--danger-color);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.clear-purchased-btn:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* Mobile - Portrait */
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 22px;
+  }
+}
+
+/* Mobile - Landscape */
+@media (max-height: 480px) {
+  .app-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+  .app {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+  .app {
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: 100vh;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
+  }
+
+  .footer-actions {
+    max-width: 500px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Safe area (iPhone notch) */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app-header {
+    padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
+  }
+
+  .footer-actions {
+    padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+  }
+}

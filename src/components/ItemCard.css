@@ -77,10 +77,40 @@
   transform: scale(0.9);
 }
 
+/* ============================================
+   Delete Button
+   ============================================ */
+
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  order: 1;
+  opacity: 0.5;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.delete-btn:active {
+  transform: scale(0.9);
+}
+
 /* Checkbox variants */
 .checkbox-needed {
   /* Checkbox ימני - צריך לקנות */
-  order: 1;
+  order: 3;
 }
 
 .checkmark-needed {

@@ -138,9 +138,6 @@ function App() {
           })
           .eq('id', existing.id);
 
-        // הסר את הסימון של pending update
-        setTimeout(() => pendingUpdates.current.delete(existing.id), 1000);
-
         if (error) {
           // במקרה של שגיאה, החזר את המצב הקודם
           pendingUpdates.current.delete(existing.id);
@@ -149,6 +146,14 @@ function App() {
           )));
           throw error;
         }
+
+        // הסר את הסימון של pending update רק אחרי שהשרת הגיב
+        // נותן עוד קצת זמן ל-real-time update להגיע עם הנתונים המעודכנים
+        setTimeout(() => {
+          pendingUpdates.current.delete(existing.id);
+          // מיין שוב כדי לוודא שהנתונים מה-DB מסודרים נכון
+          setItems(prev => sortItems([...prev]));
+        }, 1500);
       } else {
         // צור אובייקט זמני עם ID שלילי
         const tempId = -Date.now();
@@ -209,9 +214,6 @@ function App() {
         .update({ purchased: !currentStatus })
         .eq('id', id);
 
-      // הסר את הסימון של pending update
-      setTimeout(() => pendingUpdates.current.delete(id), 1000);
-
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
         pendingUpdates.current.delete(id);
@@ -220,6 +222,12 @@ function App() {
         )));
         throw error;
       }
+
+      // הסר את הסימון של pending update רק אחרי שהשרת הגיב
+      setTimeout(() => {
+        pendingUpdates.current.delete(id);
+        setItems(prev => sortItems([...prev]));
+      }, 1500);
     } catch (error) {
       console.error('Error toggling purchased:', error);
     }
@@ -282,9 +290,6 @@ function App() {
         .update(updates)
         .eq('id', id);
 
-      // הסר את הסימון של pending update
-      setTimeout(() => pendingUpdates.current.delete(id), 1000);
-
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
         pendingUpdates.current.delete(id);
@@ -293,6 +298,12 @@ function App() {
         )));
         throw error;
       }
+
+      // הסר את הסימון של pending update רק אחרי שהשרת הגיב
+      setTimeout(() => {
+        pendingUpdates.current.delete(id);
+        setItems(prev => sortItems([...prev]));
+      }, 1500);
     } catch (error) {
       console.error('Error toggling needed:', error);
     }

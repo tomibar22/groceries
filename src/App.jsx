@@ -225,17 +225,6 @@ function App() {
             onToggleNeeded={toggleNeeded}
           />
 
-          {purchasedCount > 0 && (
-            <div className="footer-actions">
-              <button
-                className="clear-purchased-btn"
-                onClick={clearPurchased}
-              >
-                ✓ סמן הכל כלא נקנה ({purchasedCount})
-              </button>
-            </div>
-          )}
-
           {items.length === 0 && (
             <div className="empty-state">
               <p>אין מוצרים בקטלוג</p>

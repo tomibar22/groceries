@@ -55,6 +55,7 @@ function App() {
         .select('*')
         .order('needed', { ascending: false })
         .order('purchased', { ascending: true })
+        .order('times_needed', { ascending: false })
         .order('name', { ascending: true });
 
       if (error) throw error;
@@ -75,10 +76,14 @@ function App() {
       );
 
       if (existing) {
-        // אם קיים, סמן אותו כ-needed
+        // אם קיים, סמן אותו כ-needed והגדל times_needed
         await supabase
           .from('items')
-          .update({ needed: true, purchased: false })
+          .update({
+            needed: true,
+            purchased: false,
+            times_needed: (existing.times_needed || 0) + 1
+          })
           .eq('id', existing.id);
       } else {
         // אם לא קיים, צור חדש
@@ -88,7 +93,8 @@ function App() {
             name: itemName,
             needed: true,
             purchased: false,
-            quantity: 1
+            quantity: 1,
+            times_needed: 1
           }]);
       }
     } catch (error) {
@@ -126,9 +132,23 @@ function App() {
 
   const toggleNeeded = async (id, currentStatus) => {
     try {
+      // אם משנים מלא צריך ל-צריך, להגדיל את times_needed
+      const updates = { needed: !currentStatus, purchased: false };
+
+      if (!currentStatus) {
+        // משנים ל-needed=true, צריך להגדיל את times_needed
+        const { data: currentItem } = await supabase
+          .from('items')
+          .select('times_needed')
+          .eq('id', id)
+          .single();
+
+        updates.times_needed = (currentItem?.times_needed || 0) + 1;
+      }
+
       const { error } = await supabase
         .from('items')
-        .update({ needed: !currentStatus, purchased: false })
+        .update(updates)
         .eq('id', id);
 
       if (error) throw error;
@@ -198,12 +218,6 @@ function App() {
         <div className="loading">טוען...</div>
       ) : (
         <>
-          {neededCount > 0 && (
-            <div className="stats-bar">
-              צריך לקנות: <strong>{neededCount}</strong> מוצרים
-            </div>
-          )}
-
           <ActiveList
             items={filteredItems}
             onTogglePurchased={togglePurchased}

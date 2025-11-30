@@ -23,7 +23,6 @@ function ActiveList({ items, onTogglePurchased, onUpdateQuantity, onRemove }) {
       {/* מוצרים שנקנו */}
       {purchasedItems.length > 0 && (
         <div className="purchased-section">
-          <h3 className="section-title">✓ נקנו</h3>
           {purchasedItems.map((item) => (
             <ItemCard
               key={item.id}

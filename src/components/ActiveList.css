@@ -27,14 +27,6 @@
   border-top: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.section-title {
-  color: white;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
-  opacity: 0.9;
-  text-align: center;
-}
 
 .purchased-section .items-section {
   gap: var(--spacing-xs);

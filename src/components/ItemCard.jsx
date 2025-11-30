@@ -51,26 +51,6 @@ function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onToggleNeeded })
           <span className="item-name">{item.name}</span>
         </div>
 
-        {item.needed && (
-          <div className="quantity-controls">
-            <button
-              className="quantity-btn"
-              onClick={decrementQuantity}
-              aria-label="הפחת כמות"
-            >
-              −
-            </button>
-            <span className="quantity">{item.quantity || 1}</span>
-            <button
-              className="quantity-btn"
-              onClick={incrementQuantity}
-              aria-label="הוסף כמות"
-            >
-              +
-            </button>
-          </div>
-        )}
-
         {/* Checkbox: צריך לקנות */}
         <label className="checkbox-container checkbox-needed">
           <input
@@ -79,7 +59,7 @@ function ItemCard({ item, onTogglePurchased, onUpdateQuantity, onToggleNeeded })
             onChange={handleNeededChange}
             className="checkbox"
           />
-          <span className="checkmark checkmark-needed">{item.needed ? '🛒' : '➕'}</span>
+          <span className="checkmark checkmark-needed">{item.needed ? '✓' : ''}</span>
         </label>
       </div>
     </div>

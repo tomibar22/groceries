@@ -69,25 +69,25 @@ function ItemCard({ item, onToggleNeeded, onDeleteItem }) {
     <div
       ref={cardRef}
       className={`item-card ${item.needed ? 'not-needed' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* כפתור מחיקה ברקע */}
-      <div className="delete-action">
+      <div
+        className="delete-action"
+        style={{
+          opacity: swipeOffset / 80, // גדל בהדרגה
+          transition: isSwiping ? 'none' : 'opacity 0.3s ease-out'
+        }}
+      >
         <button className="delete-btn" onClick={handleDelete} aria-label="מחק">
           🗑️
         </button>
       </div>
 
-      {/* תוכן הכרטיס שזזה */}
-      <div
-        className="item-main"
-        style={{
-          transform: `translateX(${swipeOffset}px)`,
-          transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      {/* תוכן הכרטיס - לא זז */}
+      <div className="item-main">
         {/* Checkbox: צריך לקנות */}
         <label className="checkbox-container checkbox-needed">
           <input

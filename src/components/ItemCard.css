@@ -23,16 +23,23 @@
 
 .delete-action {
   position: absolute;
-  left: -80px;
+  right: 0;
   top: 0;
   bottom: 0;
-  width: 80px;
+  width: 100%;
   background: #ff3b30;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  padding-right: var(--spacing-md);
   z-index: 1;
   border-radius: var(--radius-md);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.delete-action[style*="opacity: 1"] {
+  pointer-events: auto;
 }
 
 /* ============================================
@@ -44,10 +51,9 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: var(--card-bg);
+  background: transparent;
   position: relative;
   z-index: 2;
-  touch-action: pan-y;
 }
 
 /* ============================================
@@ -140,9 +146,6 @@
   order: 2;
 }
 
-.item-card.not-needed .item-main {
-  background: #f9f9f9;
-}
 
 .item-name {
   font-size: 16px;

@@ -23,7 +23,7 @@
 
 .delete-action {
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
   bottom: 0;
   width: 80px;
@@ -32,7 +32,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
   opacity: 0;
   pointer-events: none;
 }

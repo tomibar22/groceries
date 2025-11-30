@@ -119,7 +119,7 @@ function App() {
         const updatedTimesNeeded = (existing.times_needed || 0) + 1;
         setItems(prev => sortItems(prev.map(item =>
           item.id === existing.id
-            ? { ...item, needed: true, times_needed: updatedTimesNeeded }
+            ? { ...item, needed: false, times_needed: updatedTimesNeeded }
             : item
         )));
 
@@ -127,7 +127,7 @@ function App() {
         const { error } = await supabase
           .from('items')
           .update({
-            needed: true,
+            needed: false,
             times_needed: updatedTimesNeeded
           })
           .eq('id', existing.id);
@@ -152,7 +152,7 @@ function App() {
         const newItem = {
           id: tempId,
           name: itemName,
-          needed: true,
+          needed: false,
           quantity: 1,
           times_needed: 1
         };
@@ -165,7 +165,7 @@ function App() {
           .from('items')
           .insert([{
             name: itemName,
-            needed: true,
+            needed: false,
             quantity: 1,
             times_needed: 1
           }])
@@ -199,8 +199,8 @@ function App() {
       // חשב את העדכונים
       const updates = { needed: !currentStatus };
 
-      if (!currentStatus) {
-        // משנים ל-needed=true, צריך להגדיל את times_needed
+      if (currentStatus) {
+        // משנים מ-needed=true ל-needed=false, כלומר צריכים את זה שוב - להגדיל את times_needed
         updates.times_needed = (previousItem?.times_needed || 0) + 1;
       }
 

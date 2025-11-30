@@ -234,6 +234,30 @@ function App() {
     }
   };
 
+  const deleteItem = async (id) => {
+    try {
+      // שמור את המצב הקודם לצורך rollback
+      const previousItems = [...items];
+
+      // Optimistic update - הסר מיד מהממשק
+      setItems(prev => prev.filter(item => item.id !== id));
+
+      // שלח לשרת ברקע
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        // במקרה של שגיאה, החזר את המצב הקודם
+        setItems(previousItems);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
   // Pull to refresh
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
@@ -282,6 +306,7 @@ function App() {
           <ActiveList
             items={filteredItems}
             onToggleNeeded={toggleNeeded}
+            onDeleteItem={deleteItem}
           />
 
           {items.length === 0 && (

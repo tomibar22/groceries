@@ -26,14 +26,13 @@
   right: 0;
   top: 0;
   bottom: 0;
-  width: 100%;
+  width: 80px;
   background: #ff3b30;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: var(--spacing-md);
+  justify-content: center;
   z-index: 1;
-  border-radius: var(--radius-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   opacity: 0;
   pointer-events: none;
 }

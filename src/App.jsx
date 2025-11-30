@@ -15,8 +15,8 @@ function App() {
   // פונקציית מיון מרכזית
   const sortItems = (itemsToSort) => {
     return [...itemsToSort].sort((a, b) => {
-      // 1. צריך vs לא צריך (needed אחרון)
-      if (a.needed !== b.needed) return b.needed - a.needed;
+      // 1. צריך vs לא צריך (needed ראשון!)
+      if (a.needed !== b.needed) return a.needed ? -1 : 1;
 
       // 2. לפי times_needed יורד (הכי פופולריים קודם)
       if (a.times_needed !== b.times_needed) {

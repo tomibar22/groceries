@@ -10,6 +10,7 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const touchStartY = useRef(0);
+  const pendingUpdates = useRef(new Set()); // מעקב אחרי פריטים שעודכנו אופטימית
 
   // פונקציית מיון מרכזית
   const sortItems = (itemsToSort) => {
@@ -60,9 +61,12 @@ function App() {
               return prev;
             });
           } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setItems(prev => sortItems(prev.map(item =>
-              item.id === payload.new.id ? payload.new : item
-            )));
+            // אם יש pending update לפריט הזה, התעלם מהעדכון real-time
+            if (!pendingUpdates.current.has(payload.new.id)) {
+              setItems(prev => sortItems(prev.map(item =>
+                item.id === payload.new.id ? payload.new : item
+              )));
+            }
           } else if (payload.eventType === 'DELETE' && payload.old) {
             setItems(prev => prev.filter(item => item.id !== payload.old.id));
           }
@@ -112,6 +116,9 @@ function App() {
       );
 
       if (existing) {
+        // סמן שיש pending update
+        pendingUpdates.current.add(existing.id);
+
         // Optimistic update - עדכן מיד את הממשק
         const updatedTimesNeeded = (existing.times_needed || 0) + 1;
         setItems(prev => sortItems(prev.map(item =>
@@ -130,8 +137,12 @@ function App() {
           })
           .eq('id', existing.id);
 
+        // הסר את הסימון של pending update
+        setTimeout(() => pendingUpdates.current.delete(existing.id), 500);
+
         if (error) {
           // במקרה של שגיאה, החזר את המצב הקודם
+          pendingUpdates.current.delete(existing.id);
           setItems(prev => sortItems(prev.map(item =>
             item.id === existing.id ? existing : item
           )));
@@ -183,6 +194,9 @@ function App() {
 
   const togglePurchased = async (id, currentStatus) => {
     try {
+      // סמן שיש pending update
+      pendingUpdates.current.add(id);
+
       // Optimistic update - עדכן מיד את הממשק
       setItems(prev => sortItems(prev.map(item =>
         item.id === id ? { ...item, purchased: !currentStatus } : item
@@ -194,8 +208,12 @@ function App() {
         .update({ purchased: !currentStatus })
         .eq('id', id);
 
+      // הסר את הסימון של pending update
+      setTimeout(() => pendingUpdates.current.delete(id), 500);
+
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
+        pendingUpdates.current.delete(id);
         setItems(prev => sortItems(prev.map(item =>
           item.id === id ? { ...item, purchased: currentStatus } : item
         )));
@@ -238,6 +256,9 @@ function App() {
 
   const toggleNeeded = async (id, currentStatus) => {
     try {
+      // סמן שיש pending update
+      pendingUpdates.current.add(id);
+
       // שמור את המצב הקודם לצורך rollback
       const previousItem = items.find(item => item.id === id);
 
@@ -260,8 +281,12 @@ function App() {
         .update(updates)
         .eq('id', id);
 
+      // הסר את הסימון של pending update
+      setTimeout(() => pendingUpdates.current.delete(id), 500);
+
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
+        pendingUpdates.current.delete(id);
         setItems(prev => sortItems(prev.map(item =>
           item.id === id ? previousItem : item
         )));

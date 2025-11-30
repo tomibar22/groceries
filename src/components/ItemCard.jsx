@@ -42,11 +42,14 @@ function ItemCard({ item, onToggleNeeded, onDeleteItem }) {
     // רק אם ההחלקה היא אופקית יותר מאנכית
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       e.preventDefault();
-      // מאפשר החלקה רק שמאלה (חיובי = ימינה בממשק RTL)
-      if (deltaX > 0) {
-        currentX.current = Math.min(deltaX, 80); // מקסימום 80px
-        setSwipeOffset(currentX.current);
-      }
+
+      // מאפשר החלקה בשני הכיוונים
+      const newOffset = swipeOffset + deltaX;
+      currentX.current = Math.max(0, Math.min(newOffset, 80)); // בין 0 ל-80px
+      setSwipeOffset(currentX.current);
+
+      // עדכן את נקודת ההתחלה לתנועה חלקה
+      touchStartX.current = e.touches[0].clientX;
     }
   };
 

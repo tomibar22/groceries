@@ -145,9 +145,11 @@ function App() {
           throw error;
         }
 
-        // הסר את הסימון של pending update
-        // המצב כבר נכון מה-optimistic update, לא צריך לעשות כלום
-        pendingUpdates.current.delete(existing.id);
+        // הסר את הסימון של pending update אחרי delay קטן
+        // כדי לתת ל-real-time updates להגיע ולהתעלם מהם
+        setTimeout(() => {
+          pendingUpdates.current.delete(existing.id);
+        }, 500);
       } else {
         // צור אובייקט זמני עם ID שלילי
         const tempId = -Date.now();
@@ -217,9 +219,11 @@ function App() {
         throw error;
       }
 
-      // הסר את הסימון של pending update
-      // המצב כבר נכון מה-optimistic update
-      pendingUpdates.current.delete(id);
+      // הסר את הסימון של pending update אחרי delay קטן
+      // כדי לתת ל-real-time updates להגיע ולהתעלם מהם
+      setTimeout(() => {
+        pendingUpdates.current.delete(id);
+      }, 500);
     } catch (error) {
       console.error('Error toggling purchased:', error);
     }
@@ -291,9 +295,11 @@ function App() {
         throw error;
       }
 
-      // הסר את הסימון של pending update
-      // המצב כבר נכון מה-optimistic update
-      pendingUpdates.current.delete(id);
+      // הסר את הסימון של pending update אחרי delay קטן
+      // כדי לתת ל-real-time updates להגיע ולהתעלם מהם
+      setTimeout(() => {
+        pendingUpdates.current.delete(id);
+      }, 500);
     } catch (error) {
       console.error('Error toggling needed:', error);
     }

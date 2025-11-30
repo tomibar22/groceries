@@ -16,7 +16,7 @@ function ItemCard({ item, onToggleNeeded }) {
   return (
     <div
       ref={cardRef}
-      className={`item-card ${!item.needed ? 'not-needed' : ''}`}
+      className={`item-card ${item.needed ? 'not-needed' : ''}`}
     >
       <div className="item-main">
         <div className="item-info">

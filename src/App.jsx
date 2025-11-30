@@ -63,9 +63,14 @@ function App() {
           } else if (payload.eventType === 'UPDATE' && payload.new) {
             // אם יש pending update לפריט הזה, התעלם מהעדכון real-time
             if (!pendingUpdates.current.has(payload.new.id)) {
-              setItems(prev => sortItems(prev.map(item =>
-                item.id === payload.new.id ? payload.new : item
-              )));
+              setItems(prev => {
+                const updated = prev.map(item =>
+                  item.id === payload.new.id ? payload.new : item
+                );
+                return sortItems(updated);
+              });
+            } else {
+              console.log('🚫 Ignoring real-time update for pending item:', payload.new.id);
             }
           } else if (payload.eventType === 'DELETE' && payload.old) {
             setItems(prev => prev.filter(item => item.id !== payload.old.id));
@@ -92,14 +97,10 @@ function App() {
     try {
       const { data, error} = await supabase
         .from('items')
-        .select('*')
-        .order('needed', { ascending: false })
-        .order('purchased', { ascending: true })
-        .order('times_needed', { ascending: false })
-        .order('name', { ascending: true });
+        .select('*');
 
       if (error) throw error;
-      setItems(data || []);
+      setItems(sortItems(data || []));
     } catch (error) {
       console.error('Error fetching items:', error);
     } finally {
@@ -138,7 +139,7 @@ function App() {
           .eq('id', existing.id);
 
         // הסר את הסימון של pending update
-        setTimeout(() => pendingUpdates.current.delete(existing.id), 500);
+        setTimeout(() => pendingUpdates.current.delete(existing.id), 1000);
 
         if (error) {
           // במקרה של שגיאה, החזר את המצב הקודם
@@ -209,7 +210,7 @@ function App() {
         .eq('id', id);
 
       // הסר את הסימון של pending update
-      setTimeout(() => pendingUpdates.current.delete(id), 500);
+      setTimeout(() => pendingUpdates.current.delete(id), 1000);
 
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
@@ -282,7 +283,7 @@ function App() {
         .eq('id', id);
 
       // הסר את הסימון של pending update
-      setTimeout(() => pendingUpdates.current.delete(id), 500);
+      setTimeout(() => pendingUpdates.current.delete(id), 1000);
 
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם

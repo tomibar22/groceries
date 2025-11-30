@@ -11,6 +11,25 @@ function App() {
   const [searchText, setSearchText] = useState('');
   const touchStartY = useRef(0);
 
+  // פונקציית מיון מרכזית
+  const sortItems = (itemsToSort) => {
+    return [...itemsToSort].sort((a, b) => {
+      // 1. צריך vs לא צריך (needed אחרון)
+      if (a.needed !== b.needed) return b.needed - a.needed;
+
+      // 2. נקנה vs לא נקנה (purchased אחרון)
+      if (a.purchased !== b.purchased) return a.purchased - b.purchased;
+
+      // 3. לפי times_needed יורד (הכי פופולריים קודם)
+      if (a.times_needed !== b.times_needed) {
+        return (b.times_needed || 0) - (a.times_needed || 0);
+      }
+
+      // 4. לפי שם בסדר עולה
+      return a.name.localeCompare(b.name, 'he');
+    });
+  };
+
   // טעינה ראשונית של כל המוצרים
   useEffect(() => {
     fetchItems();
@@ -36,14 +55,14 @@ function App() {
               // בדוק אם זה לא פריט זמני שכבר הוספנו
               const exists = prev.some(item => item.id === payload.new.id);
               if (!exists) {
-                return [...prev, payload.new];
+                return sortItems([...prev, payload.new]);
               }
               return prev;
             });
           } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setItems(prev => prev.map(item =>
+            setItems(prev => sortItems(prev.map(item =>
               item.id === payload.new.id ? payload.new : item
-            ));
+            )));
           } else if (payload.eventType === 'DELETE' && payload.old) {
             setItems(prev => prev.filter(item => item.id !== payload.old.id));
           }
@@ -95,11 +114,11 @@ function App() {
       if (existing) {
         // Optimistic update - עדכן מיד את הממשק
         const updatedTimesNeeded = (existing.times_needed || 0) + 1;
-        setItems(prev => prev.map(item =>
+        setItems(prev => sortItems(prev.map(item =>
           item.id === existing.id
             ? { ...item, needed: true, purchased: false, times_needed: updatedTimesNeeded }
             : item
-        ));
+        )));
 
         // שלח לשרת ברקע
         const { error } = await supabase
@@ -113,9 +132,9 @@ function App() {
 
         if (error) {
           // במקרה של שגיאה, החזר את המצב הקודם
-          setItems(prev => prev.map(item =>
+          setItems(prev => sortItems(prev.map(item =>
             item.id === existing.id ? existing : item
-          ));
+          )));
           throw error;
         }
       } else {
@@ -131,7 +150,7 @@ function App() {
         };
 
         // Optimistic update - הוסף מיד לממשק
-        setItems(prev => [...prev, newItem]);
+        setItems(prev => sortItems([...prev, newItem]));
 
         // שלח לשרת ברקע
         const { data, error } = await supabase
@@ -153,9 +172,9 @@ function App() {
         }
 
         // החלף את הפריט הזמני באמיתי
-        setItems(prev => prev.map(item =>
+        setItems(prev => sortItems(prev.map(item =>
           item.id === tempId ? data : item
-        ));
+        )));
       }
     } catch (error) {
       console.error('Error adding/toggling item:', error);
@@ -165,9 +184,9 @@ function App() {
   const togglePurchased = async (id, currentStatus) => {
     try {
       // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => prev.map(item =>
+      setItems(prev => sortItems(prev.map(item =>
         item.id === id ? { ...item, purchased: !currentStatus } : item
-      ));
+      )));
 
       // שלח לשרת ברקע
       const { error } = await supabase
@@ -177,9 +196,9 @@ function App() {
 
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
-        setItems(prev => prev.map(item =>
+        setItems(prev => sortItems(prev.map(item =>
           item.id === id ? { ...item, purchased: currentStatus } : item
-        ));
+        )));
         throw error;
       }
     } catch (error) {
@@ -195,9 +214,9 @@ function App() {
       const previousQuantity = items.find(item => item.id === id)?.quantity;
 
       // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => prev.map(item =>
+      setItems(prev => sortItems(prev.map(item =>
         item.id === id ? { ...item, quantity: newQuantity } : item
-      ));
+      )));
 
       // שלח לשרת ברקע
       const { error } = await supabase
@@ -207,9 +226,9 @@ function App() {
 
       if (error) {
         // במקרה של שגיאה, החזר את הערך הקודם
-        setItems(prev => prev.map(item =>
+        setItems(prev => sortItems(prev.map(item =>
           item.id === id ? { ...item, quantity: previousQuantity } : item
-        ));
+        )));
         throw error;
       }
     } catch (error) {
@@ -231,9 +250,9 @@ function App() {
       }
 
       // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => prev.map(item =>
+      setItems(prev => sortItems(prev.map(item =>
         item.id === id ? { ...item, ...updates } : item
-      ));
+      )));
 
       // שלח לשרת ברקע
       const { error } = await supabase
@@ -243,9 +262,9 @@ function App() {
 
       if (error) {
         // במקרה של שגיאה, החזר את המצב הקודם
-        setItems(prev => prev.map(item =>
+        setItems(prev => sortItems(prev.map(item =>
           item.id === id ? previousItem : item
-        ));
+        )));
         throw error;
       }
     } catch (error) {
@@ -259,9 +278,9 @@ function App() {
       const previousItems = [...items];
 
       // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => prev.map(item =>
+      setItems(prev => sortItems(prev.map(item =>
         item.purchased ? { ...item, purchased: false, needed: false } : item
-      ));
+      )));
 
       // שלח לשרת ברקע
       const { error } = await supabase

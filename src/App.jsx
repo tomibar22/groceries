@@ -11,6 +11,7 @@ function App() {
   const [searchText, setSearchText] = useState('');
   const touchStartY = useRef(0);
   const pendingUpdates = useRef(new Set()); // מעקב אחרי פריטים שעודכנו אופטימית
+  const deferredUpdates = useRef(new Map()); // עדכונים שנדחו בגלל pending
 
   // פונקציית מיון מרכזית
   const sortItems = (itemsToSort) => {
@@ -61,16 +62,17 @@ function App() {
               return prev;
             });
           } else if (payload.eventType === 'UPDATE' && payload.new) {
-            // אם יש pending update לפריט הזה, התעלם מהעדכון real-time
-            if (!pendingUpdates.current.has(payload.new.id)) {
+            // אם יש pending update לפריט הזה, שמור את העדכון לאחר מכן
+            if (pendingUpdates.current.has(payload.new.id)) {
+              console.log('🚫 Deferring real-time update for pending item:', payload.new.id);
+              deferredUpdates.current.set(payload.new.id, payload.new);
+            } else {
               setItems(prev => {
                 const updated = prev.map(item =>
                   item.id === payload.new.id ? payload.new : item
                 );
                 return sortItems(updated);
               });
-            } else {
-              console.log('🚫 Ignoring real-time update for pending item:', payload.new.id);
             }
           } else if (payload.eventType === 'DELETE' && payload.old) {
             setItems(prev => prev.filter(item => item.id !== payload.old.id));
@@ -151,8 +153,19 @@ function App() {
         // נותן עוד קצת זמן ל-real-time update להגיע עם הנתונים המעודכנים
         setTimeout(() => {
           pendingUpdates.current.delete(existing.id);
-          // מיין שוב כדי לוודא שהנתונים מה-DB מסודרים נכון
-          setItems(prev => sortItems([...prev]));
+
+          // אם היה עדכון נדחה, הרץ אותו עכשיו
+          const deferredData = deferredUpdates.current.get(existing.id);
+          if (deferredData) {
+            console.log('✅ Applying deferred update for:', existing.id);
+            setItems(prev => {
+              const updated = prev.map(item =>
+                item.id === existing.id ? deferredData : item
+              );
+              return sortItems(updated);
+            });
+            deferredUpdates.current.delete(existing.id);
+          }
         }, 1500);
       } else {
         // צור אובייקט זמני עם ID שלילי
@@ -226,7 +239,19 @@ function App() {
       // הסר את הסימון של pending update רק אחרי שהשרת הגיב
       setTimeout(() => {
         pendingUpdates.current.delete(id);
-        setItems(prev => sortItems([...prev]));
+
+        // אם היה עדכון נדחה, הרץ אותו עכשיו
+        const deferredData = deferredUpdates.current.get(id);
+        if (deferredData) {
+          console.log('✅ Applying deferred update for:', id);
+          setItems(prev => {
+            const updated = prev.map(item =>
+              item.id === id ? deferredData : item
+            );
+            return sortItems(updated);
+          });
+          deferredUpdates.current.delete(id);
+        }
       }, 1500);
     } catch (error) {
       console.error('Error toggling purchased:', error);
@@ -302,7 +327,19 @@ function App() {
       // הסר את הסימון של pending update רק אחרי שהשרת הגיב
       setTimeout(() => {
         pendingUpdates.current.delete(id);
-        setItems(prev => sortItems([...prev]));
+
+        // אם היה עדכון נדחה, הרץ אותו עכשיו
+        const deferredData = deferredUpdates.current.get(id);
+        if (deferredData) {
+          console.log('✅ Applying deferred update for:', id);
+          setItems(prev => {
+            const updated = prev.map(item =>
+              item.id === id ? deferredData : item
+            );
+            return sortItems(updated);
+          });
+          deferredUpdates.current.delete(id);
+        }
       }, 1500);
     } catch (error) {
       console.error('Error toggling needed:', error);

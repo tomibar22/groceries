@@ -1,39 +1,18 @@
 import ItemCard from './ItemCard';
 import './ActiveList.css';
 
-function ActiveList({ items, onTogglePurchased, onUpdateQuantity, onRemove }) {
-  const unpurchasedItems = items.filter(item => !item.purchased);
-  const purchasedItems = items.filter(item => item.purchased);
-
+function ActiveList({ items, onToggleNeeded }) {
   return (
     <div className="active-list">
-      {/* מוצרים שעוד לא נקנו */}
       <div className="items-section">
-        {unpurchasedItems.map((item) => (
+        {items.map((item) => (
           <ItemCard
             key={item.id}
             item={item}
-            onTogglePurchased={onTogglePurchased}
-            onUpdateQuantity={onUpdateQuantity}
-            onRemove={onRemove}
+            onToggleNeeded={onToggleNeeded}
           />
         ))}
       </div>
-
-      {/* מוצרים שנקנו */}
-      {purchasedItems.length > 0 && (
-        <div className="purchased-section">
-          {purchasedItems.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onTogglePurchased={onTogglePurchased}
-              onUpdateQuantity={onUpdateQuantity}
-              onRemove={onRemove}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

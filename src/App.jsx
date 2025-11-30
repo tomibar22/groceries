@@ -18,15 +18,12 @@ function App() {
       // 1. צריך vs לא צריך (needed אחרון)
       if (a.needed !== b.needed) return b.needed - a.needed;
 
-      // 2. נקנה vs לא נקנה (purchased אחרון)
-      if (a.purchased !== b.purchased) return a.purchased - b.purchased;
-
-      // 3. לפי times_needed יורד (הכי פופולריים קודם)
+      // 2. לפי times_needed יורד (הכי פופולריים קודם)
       if (a.times_needed !== b.times_needed) {
         return (b.times_needed || 0) - (a.times_needed || 0);
       }
 
-      // 4. לפי שם בסדר עולה
+      // 3. לפי שם בסדר עולה
       return a.name.localeCompare(b.name, 'he');
     });
   };
@@ -122,7 +119,7 @@ function App() {
         const updatedTimesNeeded = (existing.times_needed || 0) + 1;
         setItems(prev => sortItems(prev.map(item =>
           item.id === existing.id
-            ? { ...item, needed: true, purchased: false, times_needed: updatedTimesNeeded }
+            ? { ...item, needed: true, times_needed: updatedTimesNeeded }
             : item
         )));
 
@@ -131,7 +128,6 @@ function App() {
           .from('items')
           .update({
             needed: true,
-            purchased: false,
             times_needed: updatedTimesNeeded
           })
           .eq('id', existing.id);
@@ -157,7 +153,6 @@ function App() {
           id: tempId,
           name: itemName,
           needed: true,
-          purchased: false,
           quantity: 1,
           times_needed: 1
         };
@@ -171,7 +166,6 @@ function App() {
           .insert([{
             name: itemName,
             needed: true,
-            purchased: false,
             quantity: 1,
             times_needed: 1
           }])
@@ -194,71 +188,6 @@ function App() {
     }
   };
 
-  const togglePurchased = async (id, currentStatus) => {
-    try {
-      // סמן שיש pending update
-      pendingUpdates.current.add(id);
-
-      // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => sortItems(prev.map(item =>
-        item.id === id ? { ...item, purchased: !currentStatus } : item
-      )));
-
-      // שלח לשרת ברקע
-      const { error } = await supabase
-        .from('items')
-        .update({ purchased: !currentStatus })
-        .eq('id', id);
-
-      if (error) {
-        // במקרה של שגיאה, החזר את המצב הקודם
-        pendingUpdates.current.delete(id);
-        setItems(prev => sortItems(prev.map(item =>
-          item.id === id ? { ...item, purchased: currentStatus } : item
-        )));
-        throw error;
-      }
-
-      // הסר את הסימון של pending update אחרי delay קטן
-      // כדי לתת ל-real-time updates להגיע ולהתעלם מהם
-      setTimeout(() => {
-        pendingUpdates.current.delete(id);
-      }, 500);
-    } catch (error) {
-      console.error('Error toggling purchased:', error);
-    }
-  };
-
-  const updateQuantity = async (id, newQuantity) => {
-    try {
-      if (newQuantity < 1) newQuantity = 1;
-
-      // שמור את הערך הקודם לצורך rollback
-      const previousQuantity = items.find(item => item.id === id)?.quantity;
-
-      // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => sortItems(prev.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )));
-
-      // שלח לשרת ברקע
-      const { error } = await supabase
-        .from('items')
-        .update({ quantity: newQuantity })
-        .eq('id', id);
-
-      if (error) {
-        // במקרה של שגיאה, החזר את הערך הקודם
-        setItems(prev => sortItems(prev.map(item =>
-          item.id === id ? { ...item, quantity: previousQuantity } : item
-        )));
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-    }
-  };
-
   const toggleNeeded = async (id, currentStatus) => {
     try {
       // סמן שיש pending update
@@ -268,7 +197,7 @@ function App() {
       const previousItem = items.find(item => item.id === id);
 
       // חשב את העדכונים
-      const updates = { needed: !currentStatus, purchased: false };
+      const updates = { needed: !currentStatus };
 
       if (!currentStatus) {
         // משנים ל-needed=true, צריך להגדיל את times_needed
@@ -305,32 +234,6 @@ function App() {
     }
   };
 
-  const clearPurchased = async () => {
-    try {
-      // שמור את המצב הקודם לצורך rollback
-      const previousItems = [...items];
-
-      // Optimistic update - עדכן מיד את הממשק
-      setItems(prev => sortItems(prev.map(item =>
-        item.purchased ? { ...item, purchased: false, needed: false } : item
-      )));
-
-      // שלח לשרת ברקע
-      const { error } = await supabase
-        .from('items')
-        .update({ purchased: false, needed: false })
-        .eq('purchased', true);
-
-      if (error) {
-        // במקרה של שגיאה, החזר את המצב הקודם
-        setItems(previousItems);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error clearing purchased items:', error);
-    }
-  };
-
   // Pull to refresh
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
@@ -352,9 +255,6 @@ function App() {
         item.name.toLowerCase().includes(searchText.toLowerCase())
       )
     : items;
-
-  const purchasedCount = items.filter(item => item.purchased).length;
-  const neededCount = items.filter(item => item.needed && !item.purchased).length;
 
   return (
     <div
@@ -381,21 +281,8 @@ function App() {
         <>
           <ActiveList
             items={filteredItems}
-            onTogglePurchased={togglePurchased}
-            onUpdateQuantity={updateQuantity}
             onToggleNeeded={toggleNeeded}
           />
-
-          {purchasedCount > 0 && (
-            <div className="footer-actions">
-              <button
-                className="clear-purchased-btn"
-                onClick={clearPurchased}
-              >
-                ✓ סמן הכל כלא נקנה ({purchasedCount})
-              </button>
-            </div>
-          )}
 
           {items.length === 0 && (
             <div className="empty-state">

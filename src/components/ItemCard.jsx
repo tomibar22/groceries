@@ -43,8 +43,8 @@ function ItemCard({ item, onToggleNeeded, onDeleteItem }) {
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       e.preventDefault();
 
-      // מאפשר החלקה בשני הכיוונים
-      const newOffset = swipeOffset + deltaX;
+      // החלקה שמאלה (deltaX שליל) מגלה את כפתור המחיקה
+      const newOffset = swipeOffset - deltaX;
       currentX.current = Math.max(0, Math.min(newOffset, 80)); // בין 0 ל-80px
       setSwipeOffset(currentX.current);
 

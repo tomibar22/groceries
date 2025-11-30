@@ -17,11 +17,6 @@
   transform: scale(0.98);
 }
 
-.item-card.purchased {
-  opacity: 0.6;
-  background: var(--bg-color);
-}
-
 .item-card.not-needed {
   opacity: 0.4;
   background: #f9f9f9;
@@ -83,14 +78,9 @@
 }
 
 /* Checkbox variants */
-.checkbox-purchased {
-  /* Checkbox שמאלי - נקנה */
-  order: 1;
-}
-
 .checkbox-needed {
   /* Checkbox ימני - צריך לקנות */
-  order: 4;
+  order: 2;
 }
 
 .checkmark-needed {
@@ -112,7 +102,7 @@
 .item-info {
   flex: 1;
   min-width: 0;
-  order: 2;
+  order: 1;
 }
 
 .item-name {
@@ -124,54 +114,8 @@
   line-height: 1.4;
 }
 
-.item-card.purchased .item-name {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-
 .item-card.not-needed .item-name {
   color: var(--text-secondary);
-}
-
-/* ============================================
-   Quantity Controls
-   ============================================ */
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex-shrink: 0;
-  order: 3;
-}
-
-.quantity-btn {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  background: var(--bg-color);
-  color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.quantity-btn:active {
-  transform: scale(0.9);
-  background: var(--border-color);
-}
-
-.quantity {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  min-width: 24px;
-  text-align: center;
 }
 
 /* ============================================
@@ -205,14 +149,6 @@
 
   .item-name {
     font-size: 15px;
-  }
-
-  .quantity-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
-    font-size: 18px;
   }
 
   .checkmark {
